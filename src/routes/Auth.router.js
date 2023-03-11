@@ -3,7 +3,7 @@ import multer from 'multer'
 import path from 'path'
 import { v4 as uuid } from 'uuid'
 
-import { register } from '../controllers/Auth.controller'
+import { register, login } from '../controllers/Auth.controller'
 import { config } from '../config'
 
 const router = Router()
@@ -34,5 +34,7 @@ router.use(multer({
 
 // routes
 router.post('/register', register)
+
+router.post('/login', login)
 
 export default router

@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken'
 import { config } from '../config'
 import WhiteList from '../models/WhiteList.model'
 
-const generateToken = async userId => {
+const generateTokens = async userId => {
 	const expiresInRefreshToken = 30 * 24 * 60 * 60 * 1000
 	const expiresInAccessToken = 2 * 60 * 1000
 
@@ -33,4 +33,4 @@ const generateToken = async userId => {
 	}
 }
 
-export default generateToken
+export default generateTokens

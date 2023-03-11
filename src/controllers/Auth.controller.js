@@ -3,14 +3,14 @@ import path from 'path'
 import Jimp from 'jimp'
 import fsExtra from 'fs-extra'
 
-import { SchemaRegister } from '../joi/Auth.joi'
+import { SchemaRegister, SchemaLogin } from '../joi/Auth.joi'
 import User from '../models/User.model'
-import generateToken from '../utils/generateToken'
+import generateTokens from '../utils/generateTokens'
 
 export const register = async (req, res) => {
 	const { fullName, email, password, role } = req.body
 
-	// Validate user
+	// Validamos los campos enviados
 	const { error } = SchemaRegister.validate({
 		fullName,
 		email,
@@ -85,10 +85,63 @@ export const register = async (req, res) => {
 		const savedUser = await newUser.save()
 
 		// Generamos los tokens de authenticacion
-		const data = await generateToken(savedUser._id)
+		const data = await generateTokens(savedUser._id)
 
-		res.json({
+		res.header('Authorization', `Bearer ${data.accessToken}`).json({
 			error: false,
+			data
+		})
+	} catch (err) {
+		console.error(err)
+		res.status(500).json({
+			error: true,
+			message: 'Ha ocurrido un error'
+		})
+	}
+}
+
+export const login = async (req, res) => {
+	const { email, password } = req.body
+
+	// Validamos los campos enviados
+	const { error } = SchemaLogin.validate({
+		email,
+		password
+	})
+
+	if (error) {
+		return res.status(400).json({
+			error: true,
+			message: error.details[0].message
+		})
+	}
+
+	try {
+		// Validamos que el usuario exista
+		const user = await User.findOne({ email })
+
+		if (!user) {
+			return res.status(400).json({
+				error: true,
+				message: 'Usuario y/o contraseña incorrectos'
+			})
+		}
+
+		// validamos la contraseña
+		const validPassword = await bcrypt.compare(password, user.password)
+
+		if (!validPassword) {
+			return res.status(400).json({
+				error: true,
+				message: 'Usuario y/o contraseña incorrectos'
+			})
+		}
+
+		// Generamos los tokens de authenticacion
+		const data = await generateTokens(user._id)
+
+		res.header('Authorization', `Bearer ${data.accessToken}`).json({
+			error: true,
 			data
 		})
 	} catch (err) {

@@ -6,3 +6,8 @@ export const SchemaRegister = Joi.object({
 	password: Joi.string().min(8).max(20).required(),
 	role: Joi.string().min(4).max(10).pattern(/^(user|admin)$/).required()
 })
+
+export const SchemaLogin = Joi.object({
+	email: Joi.string().min(6).max(400).required().email(),
+	password: Joi.string().min(8).max(20).required()
+})
