@@ -3,8 +3,9 @@ import multer from 'multer'
 import path from 'path'
 import { v4 as uuid } from 'uuid'
 
-import { register, login } from '../controllers/Auth.controller'
+import { register, login, getProfile, refreshToken } from '../controllers/Auth.controller'
 import { config } from '../config'
+import { validateToken, isAdmin, validateRefreshToken } from '../middelwares/validateToken.middelware'
 
 const router = Router()
 
@@ -33,8 +34,12 @@ router.use(multer({
 }).single('image'))
 
 // routes
-router.post('/register', register)
+router.post('/register', validateToken, isAdmin, register)
 
 router.post('/login', login)
+
+router.get('/profile', validateToken, getProfile)
+
+router.get('/refresh', validateRefreshToken, refreshToken)
 
 export default router

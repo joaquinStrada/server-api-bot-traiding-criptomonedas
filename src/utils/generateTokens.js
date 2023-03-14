@@ -10,13 +10,13 @@ const generateTokens = async userId => {
 	const refreshToken = jwt.sign({
 		userId
 	}, config.jwt.refreshTokenSecret, {
-		expiresIn: expiresInRefreshToken
+		expiresIn: `${expiresInRefreshToken}ms`
 	})
 
 	const accessToken = jwt.sign({
 		userId
 	}, config.jwt.accessTokenSecret, {
-		expiresIn: expiresInAccessToken
+		expiresIn: `${expiresInAccessToken}ms`
 	})
 
 	await new WhiteList({

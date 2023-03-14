@@ -5,6 +5,7 @@ import fsExtra from 'fs-extra'
 
 import { SchemaRegister, SchemaLogin } from '../joi/Auth.joi'
 import User from '../models/User.model'
+import WhiteList from '../models/WhiteList.model'
 import generateTokens from '../utils/generateTokens'
 
 export const register = async (req, res) => {
@@ -142,6 +143,36 @@ export const login = async (req, res) => {
 
 		res.header('Authorization', `Bearer ${data.accessToken}`).json({
 			error: true,
+			data
+		})
+	} catch (err) {
+		console.error(err)
+		res.status(500).json({
+			error: true,
+			message: 'Ha ocurrido un error'
+		})
+	}
+}
+
+export const getProfile = (req, res) => {
+	res.json({
+		error: false,
+		data: req.user
+	})
+}
+
+export const refreshToken = async (req, res) => {
+	const { idValidToken, user } = req
+
+	try {
+		// Borrar los antiguos tokens de authenticacion
+		await WhiteList.findByIdAndDelete(idValidToken)
+
+		// Generamos los tokens de authenticacion
+		const data = await generateTokens(user.id)
+
+		res.header('Authorization', `Bearer ${data.accessToken}`).json({
+			error: false,
 			data
 		})
 	} catch (err) {
