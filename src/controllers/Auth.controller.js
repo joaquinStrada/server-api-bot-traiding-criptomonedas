@@ -3,7 +3,7 @@ import path from 'path'
 import Jimp from 'jimp'
 import fsExtra from 'fs-extra'
 
-import { SchemaRegister, SchemaLogin } from '../joi/Auth.joi'
+import { SchemaRegister, SchemaLogin, SchemaUpdate } from '../joi/Auth.joi'
 import User from '../models/User.model'
 import WhiteList from '../models/WhiteList.model'
 import generateTokens from '../utils/generateTokens'
@@ -174,6 +174,104 @@ export const refreshToken = async (req, res) => {
 		res.header('Authorization', `Bearer ${data.accessToken}`).json({
 			error: false,
 			data
+		})
+	} catch (err) {
+		console.error(err)
+		res.status(500).json({
+			error: true,
+			message: 'Ha ocurrido un error'
+		})
+	}
+}
+
+export const updateProfile = async (req, res) => {
+	const { fullName, email, password } = req.body
+
+	// Validamos los campos enviados
+	const { error } = SchemaUpdate.validate({
+		fullName,
+		email,
+		password
+	})
+
+	if (error) {
+		return res.status(400).json({
+			error: true,
+			message: error.details[0].message
+		})
+	}
+
+	try {
+		// Validamos si el email pertenece a otro uasuario en caso de serlo retornamos un error
+		const isEmailExist = await User.findOne({ email })
+
+		if (isEmailExist && isEmailExist._id.toString() !== req.user.id.toString()) {
+			/* console.log({
+				idDB: isEmailExist._id.toString(),
+				idUser: req.user.id.toString()
+			}) */
+			return res.status(400).json({
+				error: true,
+				message: 'Email ya registrado',
+			})
+		}
+
+		// Obtenemos el usuario
+		const updateUser = await User.findById(req.user.id)
+
+		// Actualizamos los otros sdatos
+		updateUser.fullName = fullName
+		updateUser.email = email
+
+		// Encriptamos la contraseña en caso de que la actualicen
+		if (password) {
+			const salt = await bcrypt.genSalt(10)
+			updateUser.password = await bcrypt.hash(password, salt)
+		}
+
+		// Validamos si nos enviaron una foto de perfil
+		if (req.file && req.file.path) {
+			const { path: pathImage, destination, filename } = req.file
+			// Eliminamos las fotos anteriores
+			if (updateUser.imageName50x50 !== '' && updateUser.imageName300x300 !== '') {
+				await fsExtra.unlink(path.join(destination, updateUser.imageName50x50))
+				await fsExtra.unlink(path.join(destination, updateUser.imageName300x300))
+			}
+
+			// Creamos las variables que necesitamos
+			const ext = path.extname(filename)
+			const imageName50x50 = `${req.user.id}_50x50${ext}`
+			const imageName300x300 = `${req.user.id}_300x300${ext}`
+			const pathImage50x50 = path.join(destination, imageName50x50)
+			const pathImage300x300 = path.join(destination, imageName300x300)
+
+			// Procesamos la foto de perfil
+			const Image = await Jimp.read(pathImage)
+			await Image.resize(50, 50).writeAsync(pathImage50x50)
+			await Image.resize(300, 300).writeAsync(pathImage300x300)
+
+			// Eliminamos la foto de perfil anterior
+			await fsExtra.unlink(pathImage)
+
+			// Actualizamos las imagenes
+			updateUser.imageName50x50 = imageName50x50
+			updateUser.imageName300x300 = imageName300x300
+		}
+		
+		const savedUser = await updateUser.save()
+
+		res.json({
+			error: true,
+			data: {
+				id: savedUser._id,
+				fullName: savedUser.fullName,
+				email: savedUser.email,
+				imageName50x50: savedUser.imageName50x50,
+				imageName300x300: savedUser.imageName300x300,
+				role: savedUser.role,
+				createdAt: savedUser.createdAt,
+				updatedAt: savedUser.updatedAt
+			}
 		})
 	} catch (err) {
 		console.error(err)

@@ -11,3 +11,9 @@ export const SchemaLogin = Joi.object({
 	email: Joi.string().min(6).max(400).required().email(),
 	password: Joi.string().min(8).max(20).required()
 })
+
+export const SchemaUpdate = Joi.object({
+	fullName: Joi.string().min(6).max(255).required(),
+	email: Joi.string().min(6).max(400).required().email(),
+	password: Joi.string().min(8).max(20)
+})

@@ -3,7 +3,7 @@ import multer from 'multer'
 import path from 'path'
 import { v4 as uuid } from 'uuid'
 
-import { register, login, getProfile, refreshToken } from '../controllers/Auth.controller'
+import { register, login, getProfile, refreshToken, updateProfile } from '../controllers/Auth.controller'
 import { config } from '../config'
 import { validateToken, isAdmin, validateRefreshToken } from '../middelwares/validateToken.middelware'
 
@@ -39,6 +39,8 @@ router.post('/register', validateToken, isAdmin, register)
 router.post('/login', login)
 
 router.get('/profile', validateToken, getProfile)
+
+router.put('/profile', validateToken, updateProfile)
 
 router.get('/refresh', validateRefreshToken, refreshToken)
 
