@@ -15,5 +15,11 @@ export const config = {
 	jwt: {
 		accessTokenSecret: process.env.ACCESS_TOKEN_SECRET || '',
 		refreshTokenSecret: process.env.REFRESH_TOKEN_SECRET || ''
+	},
+
+	userDefault: {
+		fullName: process.env.FULL_NAME || 'Bot Traiding',
+		email: process.env.USER_EMAIL || 'admin@bottraiding.com',
+		password: process.env.PASSWORD_DEFAULT || 'admin1234'
 	}
 }
