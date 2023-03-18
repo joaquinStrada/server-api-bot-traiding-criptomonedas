@@ -44,7 +44,7 @@ export const validateToken = async (req, res, next) => {
 		}
 		next()
 	} catch (err) {
-		console.error(err)
+		//console.error(err)
 		res.status(401).json({
 			error: true,
 			message: 'Acceso denegado'
@@ -115,7 +115,7 @@ export const validateRefreshToken = async (req, res, next) => {
 		req.idValidToken = validToken._id
 		next()
 	} catch (err) {
-		console.error(err)
+		//console.error(err)
 		res.status(401).json({
 			error: true,
 			message: 'Acceso denegado'

@@ -281,3 +281,71 @@ export const updateProfile = async (req, res) => {
 		})
 	}
 }
+
+export const getUsers = async (req, res) => {
+	try {
+		const users = await User.find()
+
+		const data = users.map(({ _id, fullName, email, imageName50x50, imageName300x300, role, createdAt, updatedAt }) => ({
+			id: _id,
+			fullName,
+			email,
+			imageName50x50,
+			imageName300x300,
+			role,
+			createdAt,
+			updatedAt
+		}))
+
+		res.json({
+			error: true,
+			length: data.length,
+			data
+		})
+	} catch (err) {
+		console.error(err)
+		res.status(500).json({
+			error: true,
+			message: 'Ha ocurrido un error'
+		})
+	}
+}
+
+export const getUser = async (req, res) => {
+	const { id } = req.params
+
+	try {
+		const { _id, fullName, email, imageName50x50, imageName300x300, role, createdAt, updatedAt } = await User.findById(id)
+
+		res.json({
+			error: false,
+			data: {
+				id: _id,
+				fullName,
+				email,
+				imageName50x50,
+				imageName300x300,
+				role,
+				createdAt,
+				updatedAt,
+			}
+		})
+	} catch (err) {
+		if (err.message === 'Cast to ObjectId failed for value "6414a6b18b3330ffdac9" (type string) at path "_id" for model "User"') {
+			res.status(400).json({
+				error: true,
+				message: 'Usuario no encontrado'
+			})
+		} else {
+			console.error(err)
+			res.status(500).json({
+				error: true,
+				message: 'Ha ocurrido un error'
+			})
+		}
+	}
+}
+
+export const updateUser = async (req, res) => {
+	
+}
