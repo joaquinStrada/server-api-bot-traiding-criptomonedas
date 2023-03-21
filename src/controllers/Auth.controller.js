@@ -466,3 +466,38 @@ export const updateUser = async (req, res) => {
 		}
 	}
 }
+
+export const deleteUser = async (req, res) => {
+	const { id } = req.params
+	
+	try {
+		const { _id, fullName, email, imageName50x50, imageName300x300, role,createdAt, updatedAt  } = await User.findByIdAndDelete(id)
+
+		res.json({
+			error: false,
+			data: { 
+				id: _id, 
+				fullName, 
+				email, 
+				imageName50x50, 
+				imageName300x300, 
+				role,
+				createdAt, 
+				updatedAt  
+			}
+		})
+	} catch (err) {
+		if (err.message === `Cast to ObjectId failed for value "${id}" (type string) at path "_id" for model "User"`) {
+			res.status(400).json({
+				error: true,
+				message: 'Usuario no encontrado'
+			})
+		} else {
+			console.error(err)
+			res.status(500).json({
+				error: true,
+				message: 'Ha ocurrido un error'
+			})
+		}
+	}
+}
